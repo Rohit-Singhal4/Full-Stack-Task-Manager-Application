@@ -1,0 +1,40 @@
+version: '3'
+services:
+  todo-api:
+    build:
+        context: TodoApi
+        dockerfile: TodoApi/Dockerfile
+    container_name: todo-api-container
+    image: todo-api:latest
+    environment:
+      - TODO_DB_CONNECTION=host=todo-db;Port=5432;database=postgres;username=postgres;password=postgres;Include Error Detail=True
+    ports:
+      - "8080:8080"
+    develop: 
+        watch:
+          - action: rebuild
+            path: ./TodoApi/TodoApi/bin/debug
+  todo-ui:
+    build:
+      context: ui
+      dockerfile: Dockerfile
+    container_name: todo-ui-container
+    image: todo-ui:latest
+    ports:
+      - "4200:4200"
+    develop:
+      watch:
+        - action: sync
+          path: ./ui
+  todo-db:
+    image: postgres:latest
+    container_name: todo-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+      - ~/DockerComposeVolumes/postgres-todo-data:/var/lib/postgresql/data
